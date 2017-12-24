@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        ul {
+            list-style: none;
+        }
+        button {
+            outline: none;
+            border: none;
+        }
+        #wrap {
+            position: relative;
+            width: 1226px;
+            height: 460px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        #img-list {
+            position: absolute;
+            width: 7356px;
+			z-index: 1;
+			/* css3实现动画效果			
+			transition:left 2s;
+			-moz-transition:left 2s; Firefox 4
+			-webkit-transition:left 2s; Safari and Chrome
+			-o-transition:left 2s; Opera */
+        }
+        #img-list > li {
+            float: left;
+        }
+        #nav-list {
+            position: absolute;
+			z-index: 2;
+            top: 420px;
+            left: 50%;
+            width: 140px;
+            margin-left: -70px;
+        }
+        #nav-list > li {
+            float: left;
+            width: 20px;
+            height: 20px;
+            margin: 5px;
+            text-indent: -9999em;
+            border-radius: 50%;
+            background-color: #ccc;
+            cursor: pointer;
+        }
+        #nav-list .on {
+            background-color: #FF4400;
+        }
+        #prev, #next {
+            display: none;
+            position: absolute;
+            top: 50%;
+            width: 46px;
+            height: 80px;
+            margin-top: -40px;
+            font-size: 30px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #fff;
+            cursor: pointer;
+			z-index: 2;
+        }
+        #prev {
+            left: 0;
+        }
+        #next {
+            right: 0;
+        }
+        #prev:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #next:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #wrap:hover #prev {
+            display: block;
+        }
+        #wrap:hover #next {
+            display: block;
+        }
+    </style>
+
+</head>
+<body>
+<div id="wrap">
+    <ul id="img-list" style="left: -1226px;">
+        <li><img src="images/img4.jpg"></li>
+        <li><img src="images/img1.jpg"></li>
+        <li><img src="images/img2.jpg"></li>
+        <li><img src="images/img3.jpg"></li>
+        <li><img src="images/img4.jpg"></li>
+        <li><img src="images/img1.jpg"></li>
+    </ul>
+    <ul id="nav-list">
+        <li index="1" class="on">1</li>
+        <li index="2">2</li>
+        <li index="3">3</li>
+        <li index="4">4</li>
+    </ul>
+    <button id="prev">&lt</button>
+    <button id="next">&gt</button>
+</div>
+<script type=text/javascript>
+    window.onload=function(){
+    var wrap=document.getElementById('wrap');
+    var img=document.getElementById('img-list');
+    var nav=document.getElementById('nav-list').getElementsByTagName('li');
+    var prev=document.getElementById('prev');
+    var next=document.getElementById('next');
+    var index=1;
+	var animated = false;
+	var timer;
+	var interval = 3000;
+    // *****列表高亮*****
+    function shownav(){
+        for (var i = 0; i < nav.length; i++) {
+            if (nav[i].className==='on'){
+                nav[i].className='';
+                break;}
+         }
+        nav[index-1].className='on';
+    }
+		// 位移的判断（是否位移）的函数封装
+    function animate(offset){
+		if (offset == 0) {
+                return;
+            }
+        animated = true;
+        var newleft=parseInt(img.style.left)+offset;
+		var time=300;//位移总时间
+		var interval=10;//位移间隔时间
+		var speed=offset/(time/interval);//每次位移量
+	
+		// 利用函数的递归实现每次偏移量
+		function go() {
+
+			if ((speed<0 && parseInt(img.style.left)>newleft) ||(speed>0 && parseInt(img.style.left)<newleft)){
+				img.style.left = parseInt(img.style.left) + speed + 'px';
+			setTimeout(go,interval);
+			}
+			else{ 
+				animated = false;    
+				img.style.left=newleft+'px';
+			if(newleft> -1226){
+				img.style.left = -4904+'px';
+			}
+			if(newleft< -4904){
+           img.style.left = -1226+'px';
+			}
+			
+        }
+		}
+		go();
+	}
+		//自动播放
+	function play(){
+		timer=setInterval(function(){
+			 next.onclick();}
+		, interval)
+	}
+	function stop(){
+		clearInterval(timer);
+	}
+    // *****左箭头事件*****
+    prev.onclick=function(){
+         index -= 1;
+         index = index <1 ? 4 : index;
+         shownav();
+         if(!animated){
+			 animate(1226);
+		}
+    };
+    // *****右箭头事件*****
+    next.onclick=function(){
+         if(index === 4){
+         index = 1;
+         }
+         else{
+         index += 1;
+         }
+         shownav();
+         if(!animated){
+		 animate(-1226);
+		 }
+    };
+    // 按钮切换事件
+    for(var i=0;i<nav.length;i++)
+    {
+    nav[i].onclick=function(){
+        if(this.className=="on")
+            {
+                return;
+            }
+     var myIndex=parseInt(this.getAttribute('index'));
+	// getAttribute()DOM2级方法 可以获取DOM自带的属性 也可以获取自定义属性 
+     var offset=-1224*(myIndex-index);
+	//求出偏移量
+     animate(offset);
+     index=myIndex;
+	 //更新高亮图标
+     shownav();
+    }
+    }
+	//添加鼠标移入事件
+	wrap.onmouseover = stop;
+	wrap.onmouseout = play;
+	//自动动画播放
+	play();
+
+}
+</script>
+<!-- 从箭头切换->无限滚动->按钮切换->延迟切换->自动播放 -->
+<!-- <script src="js/slider.js"></script> -->
+</body>
+</html>
